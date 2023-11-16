@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import org.apache.commons.io.input.ReversedLinesFileReader;
-import org.apache.commons.io.input.ReversedLinesFileReader.Builder;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductManager;
 import org.esa.snap.core.util.SystemUtils;
@@ -63,6 +62,11 @@ import org.openide.util.Lookup;
  * </ul>
  */
 public class SnapSystemReport {
+
+  public static void main(String[] args) {
+    SnapSystemReport systemReport = new SnapSystemReport().name("SNAP_System_Report").logTail(100);
+
+  }
 
   private String reportName;
   private String title;
@@ -183,7 +187,7 @@ public class SnapSystemReport {
     addBasicInformation(report);
     addStackTrace(report);
     addProductList(report);
-    addInstalledModules(report);
+    // addInstalledModules(report);
     addPreferences(report);
     addSystemProperties(report);
     addEnvironmentVariables(report);
@@ -196,11 +200,16 @@ public class SnapSystemReport {
       report.append("System Log Tail:\n");
 
       Path logFile = getCurrentLogFile();
-      Builder builder = ReversedLinesFileReader.builder()
-                                               .setPath(logFile)
-                                               .setBufferSize(4096)
-                                               .setCharset(StandardCharsets.UTF_8);
-      try (ReversedLinesFileReader reader = builder.get()) {
+      // builder doesn't work within snap. Seem it has an old version of commons-io.
+      // org.geotools:gt-wms:jar:28.2:compile includes version 2.10 of commons-io
+      // todo provide patch for this to snap and then use latest version of commons-io
+      // Builder builder = ReversedLinesFileReader.builder()
+      //                                          .setPath(logFile)
+      //                                          .setBufferSize(4096)
+      //                                          .setCharset(StandardCharsets.UTF_8);
+      // try (ReversedLinesFileReader reader = builder.get()) {
+      try (ReversedLinesFileReader reader = new ReversedLinesFileReader(logFile.toFile(), 4096,
+          StandardCharsets.UTF_8)) {
         List<String> lines = reader.readLines(numLogTailLines);
         lines.forEach(line -> report.append(line).append("\n"));
       } catch (IOException e) {
@@ -233,7 +242,7 @@ public class SnapSystemReport {
     report.append("System Properties:\n");
     Properties properties = System.getProperties();
     properties.stringPropertyNames().stream().sorted()
-        .forEach(name -> report.append(name).append(" = ").append(properties.getProperty(name)).append("\n"));
+              .forEach(name -> report.append(name).append(" = ").append(properties.getProperty(name)).append("\n"));
     report.append("\n\n");
   }
 
@@ -259,12 +268,20 @@ public class SnapSystemReport {
     try {
       Collection<? extends ModuleInfo> modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
       modules.stream().sorted(Comparator.comparing((ModuleInfo o) -> o.getCodeNameBase())).forEach(
-          info -> report.append(info.getDisplayName()).append("\n").append("\tcode name: ")
-              .append(info.getCodeNameBase()).append("\n").append("\tversion: ").append(info.getImplementationVersion())
-              .append("\n").append("\tenabled: ").append(info.isEnabled()).append("\n"));
+          info -> report.append(info.getDisplayName())
+                        .append("\n")
+                        .append("\tcode name: ")
+                        .append(info.getCodeNameBase())
+                        .append("\n")
+                        .append("\tversion: ")
+                        .append(info.getImplementationVersion())
+                        .append("\n")
+                        .append("\tenabled: ")
+                        .append(info.isEnabled())
+                        .append("\n"));
     } catch (Throwable e) {
       report.append("Error while while retrieving module information:\n").append("\t").append(e.getMessage())
-          .append("\n");
+            .append("\n");
     }
     report.append("\n\n");
   }
@@ -310,7 +327,7 @@ public class SnapSystemReport {
     }
     String applicationName = SnapApp.getDefault().getAppContext().getApplicationName();
     report.append("Application: ").append(applicationName).append(" v").append(SystemUtils.getReleaseVersion())
-        .append("\n");
+          .append("\n");
     report.append("Java Version: ").append(System.getProperty("java.version")).append("\n");
     report.append("Java Vendor: ").append(System.getProperty("java.vendor")).append("\n");
     report.append("OS: ").append(System.getProperty("os.name")).append("\n");
@@ -322,7 +339,7 @@ public class SnapSystemReport {
     report.append("File systems: \n");
     for (File root : roots) {
       report.append(root.getAbsolutePath()).append(" - ").append(toGib(root.getFreeSpace())).append("/")
-          .append(toGib(root.getTotalSpace())).append(" Free/Total GiB\n");
+            .append(toGib(root.getTotalSpace())).append(" Free/Total GiB\n");
     }
     report.append("\n\n");
   }
