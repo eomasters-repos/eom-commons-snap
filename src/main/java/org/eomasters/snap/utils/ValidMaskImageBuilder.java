@@ -204,14 +204,14 @@ public class ValidMaskImageBuilder {
 
     public ValidExprImage(MaskOperation operation, String validExpression) {
       super(operation);
-      if (validExpression == null || validExpression.isEmpty()) {
-        throw new IllegalArgumentException("Expression must not be null or empty.");
-      }
       this.validExpression = validExpression;
     }
 
     @Override
-    public RenderedImage create(Product product) {
+    public RenderedImage create(Product product) throws ValidMaskBuilderException {
+      if (validExpression == null || validExpression.isEmpty()) {
+        throw new ValidMaskBuilderException("Expression must not be null or empty.");
+      }
       Term term = VirtualBandOpImage.parseExpression(validExpression, product);
       VirtualBandOpImage.Builder builder = VirtualBandOpImage.builder(term).sourceSize(product.getSceneRasterSize());
       builder.mask(true);
@@ -225,14 +225,15 @@ public class ValidMaskImageBuilder {
 
     public WktRoiImage(MaskOperation operation, Geometry geometry) {
       super(operation);
-      if (geometry == null) {
-        throw new IllegalArgumentException("Geometry must not be null.");
-      }
       this.geometry = geometry;
     }
 
     @Override
-    public RenderedImage create(Product product) {
+    public RenderedImage create(Product product) throws ValidMaskBuilderException {
+      if (geometry == null) {
+        throw new ValidMaskBuilderException("Geometry must not be null.");
+      }
+
       SimpleFeatureType wktFeatureType = PlainFeatureFactory.createDefaultFeatureType(DefaultGeographicCRS.WGS84);
       ListFeatureCollection newCollection = new ListFeatureCollection(wktFeatureType);
       SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(wktFeatureType);
@@ -261,7 +262,6 @@ public class ValidMaskImageBuilder {
 
     public ShapefileImage(MaskOperation operation, Path shapePath) {
       this(operation, shapePath.toFile());
-
     }
 
     public ShapefileImage(MaskOperation operation, URL shapeUrl) {
@@ -270,15 +270,16 @@ public class ValidMaskImageBuilder {
 
     public ShapefileImage(MaskOperation operation, File shapeFile) {
       super(operation);
-      if (shapeFile == null) {
-        throw new IllegalArgumentException("Shapefile must not be null.");
-      }
       this.shapeFile = shapeFile;
     }
 
 
     @Override
     public RenderedImage create(Product product) throws ValidMaskBuilderException {
+      if (shapeFile == null) {
+        throw new ValidMaskBuilderException("Shapefile must not be null.");
+      }
+
       Dimension dimension = product.getSceneRasterSize();
       final FeatureUtils.FeatureCrsProvider crsProvider = new Wgs84CrsProvider();
       DefaultFeatureCollection simpleFeatures;
