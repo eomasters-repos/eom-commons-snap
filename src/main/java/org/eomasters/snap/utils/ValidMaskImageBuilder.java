@@ -112,7 +112,7 @@ public class ValidMaskImageBuilder {
   }
 
   public ValidMaskImageBuilder withExpression(String validExpression) {
-    if (validExpression != null) {
+    if (validExpression != null && !validExpression.isEmpty()) {
       maskImages.add(new ValidExprImage(operation, validExpression));
     }
     return this;
@@ -126,7 +126,7 @@ public class ValidMaskImageBuilder {
   }
 
   public ValidMaskImageBuilder withWkt(String wktString) throws ParseException {
-    if (wktString != null) {
+    if (wktString != null && !wktString.isEmpty()) {
       maskImages.add(new WktRoiImage(operation, new WKTReader().read(wktString)));
     }
     return this;
