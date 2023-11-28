@@ -62,7 +62,7 @@ public class ValidMaskImageBuilder {
 
   private static final int VALID = 255;
   private final Product sourceProduct;
-  private ArrayList<MaskImage> maskImages = new ArrayList<>();
+  private final ArrayList<MaskImage> maskImages = new ArrayList<>();
   private MaskOperation operation;
 
 
@@ -204,6 +204,9 @@ public class ValidMaskImageBuilder {
 
     public ValidExprImage(MaskOperation operation, String validExpression) {
       super(operation);
+      if (validExpression == null || validExpression.isEmpty()) {
+        throw new IllegalArgumentException("Expression must not be null or empty.");
+      }
       this.validExpression = validExpression;
     }
 
@@ -222,6 +225,9 @@ public class ValidMaskImageBuilder {
 
     public WktRoiImage(MaskOperation operation, Geometry geometry) {
       super(operation);
+      if (geometry == null) {
+        throw new IllegalArgumentException("Geometry must not be null.");
+      }
       this.geometry = geometry;
     }
 
@@ -264,6 +270,9 @@ public class ValidMaskImageBuilder {
 
     public ShapefileImage(MaskOperation operation, File shapeFile) {
       super(operation);
+      if (shapeFile == null) {
+        throw new IllegalArgumentException("Shapefile must not be null.");
+      }
       this.shapeFile = shapeFile;
     }
 
