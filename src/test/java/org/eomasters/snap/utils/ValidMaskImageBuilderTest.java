@@ -39,18 +39,32 @@ class ValidMaskImageBuilderTest {
 
   private static final int INVALID = 0;
   private static final int VALID = 255;
-  private static Product product;
+  private static Product smallProduct;
 
   @BeforeAll
   static void beforeAll() {
     DummyProductBuilder builder = new DummyProductBuilder();
     builder.size(Size.SMALL).gc(GC.MAP);
-    product = builder.create();
+    smallProduct = builder.create();
   }
 
   @Test
+  void testMultiTileProduct() throws ValidMaskBuilderException {
+    DummyProductBuilder builder = new DummyProductBuilder();
+    Product middleProduct = builder.size(Size.MEDIUM).create();
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(middleProduct);
+    maskImageBuilder.withExpression("Y >= 10.5 && Y <= 600.5");
+    RenderedImage validMaskImage = maskImageBuilder.create();
+
+    assertEquals(INVALID, validMaskImage.getData().getSample(10, 5, 0));
+    assertEquals(VALID, validMaskImage.getData().getSample(10, 20, 0));
+    assertEquals(VALID, validMaskImage.getData().getSample(10, 300, 0));
+    assertEquals(VALID, validMaskImage.getData().getSample(10, 590, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(10, 700, 0));
+  }
+  @Test
   void testCreateValidExpressionMask() throws ValidMaskBuilderException {
-    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(product);
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     maskImageBuilder.withExpression("X == 10.5");
     RenderedImage validMaskImage = maskImageBuilder.create();
 
@@ -64,7 +78,7 @@ class ValidMaskImageBuilderTest {
 
   @Test
   void testCreateMaskWithWktGeometry() throws ParseException, ValidMaskBuilderException {
-    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(product);
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
 
     // Rectangle from 40,9 to 74,46
     maskImageBuilder.withWkt(new WKTReader().read(
@@ -82,9 +96,10 @@ class ValidMaskImageBuilderTest {
 
   @Test
   void testCreateMaskWithShapefile() throws ValidMaskBuilderException {
-    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(product);
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     // Rectangle from 27,28 to 60,64
     maskImageBuilder.withShapeFile(getClass().getResource("geometry_Polygon.shp"));
+    // Exception is Okay:  Could not open the .shx file, continuing assuming the .shp file is not sparse
     RenderedImage validMaskImage = maskImageBuilder.create();
 
     assertEquals(VALID, validMaskImage.getData().getSample(27, 28, 0));
@@ -96,9 +111,9 @@ class ValidMaskImageBuilderTest {
 
   @Test
   void testCreateMaskWithMaskImage() throws ValidMaskBuilderException {
-    RenderedImage maskImage = new ValidMaskImageBuilder(product).withExpression("X ==100.5 || Y==100.5").create();
+    RenderedImage maskImage = new ValidMaskImageBuilder(smallProduct).withExpression("X ==100.5 || Y==100.5").create();
 
-    RenderedImage validMaskImage = new ValidMaskImageBuilder(product).withMaskImage(maskImage).create();
+    RenderedImage validMaskImage = new ValidMaskImageBuilder(smallProduct).withMaskImage(maskImage).create();
 
     assertEquals(VALID, validMaskImage.getData().getSample(100, 100, 0));
     assertEquals(VALID, validMaskImage.getData().getSample(100, 46, 0));
@@ -109,7 +124,7 @@ class ValidMaskImageBuilderTest {
 
   @Test
   void testCreateMaskAllDefaultOrCombined() throws ParseException, ValidMaskBuilderException {
-    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(product);
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     maskImageBuilder.withExpression("X == 10.5");
     // Rectangle from 40,9 to 74,46
     maskImageBuilder.withWkt(
@@ -118,7 +133,7 @@ class ValidMaskImageBuilderTest {
             + "   3.3258594917787736 -0.7772795216741405))");
     // Rectangle from 27,28 to 60,64
     maskImageBuilder.withShapeFile(getClass().getResource("geometry_Polygon.shp"));
-    RenderedImage maskImage = new ValidMaskImageBuilder(product).withExpression("X ==100.5 || Y==100.5").create();
+    RenderedImage maskImage = new ValidMaskImageBuilder(smallProduct).withExpression("X ==100.5 || Y==100.5").create();
     maskImageBuilder.withMaskImage(maskImage);
 
     RenderedImage validMaskImage = maskImageBuilder.create();
@@ -143,7 +158,7 @@ class ValidMaskImageBuilderTest {
 
   @Test
   void testCreateMaskWithOr() throws ValidMaskBuilderException {
-    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(product);
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     RenderedImage validMaskImage = maskImageBuilder
         .withExpression("X == 10.5")
         .or()
@@ -163,7 +178,7 @@ class ValidMaskImageBuilderTest {
 
   @Test
   void testCreateMaskWithAnd() throws ValidMaskBuilderException {
-    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(product);
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     RenderedImage validMaskImage = maskImageBuilder
         .withExpression("X == 10.5")
         .and()
