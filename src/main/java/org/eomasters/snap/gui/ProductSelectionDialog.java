@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -42,7 +42,6 @@ import org.esa.snap.ui.ModalDialog;
  */
 public class ProductSelectionDialog extends ModalDialog {
 
-  private static final String HID_EOMTBX_PRODUCT_SELECTION = "hid_eomtbx.productSelection";
   private final ProductTableModel listModel;
 
   /**
@@ -50,9 +49,10 @@ public class ProductSelectionDialog extends ModalDialog {
    *
    * @param parent   the parent window
    * @param products the products to select from
+   * @param helpID   the help ID
    */
-  public ProductSelectionDialog(Window parent, List<ProductSelection> products) {
-    super(parent, "Product Selection", ModalDialog.ID_OK_CANCEL, HID_EOMTBX_PRODUCT_SELECTION);
+  public ProductSelectionDialog(Window parent, List<ProductSelection> products, String helpID) {
+    super(parent, "Product Selection", ModalDialog.ID_OK_CANCEL, helpID);
     listModel = new ProductTableModel(products);
   }
 

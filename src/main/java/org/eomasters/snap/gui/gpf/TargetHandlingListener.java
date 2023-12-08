@@ -21,22 +21,19 @@
  * =========================LICENSE_END==================================
  */
 
-package org.eomasters.snap.gui;
-
-import com.bc.ceres.binding.PropertyDescriptor;
-import com.bc.ceres.swing.binding.internal.FileEditor;
-import java.nio.file.Path;
+package org.eomasters.snap.gui.gpf;
 
 /**
- * An editor for {@link Path}s using a file chooser dialog. It is registered as service in the file
- * <code>META-INF/services/com.bc.ceres.swing.binding.PropertyEditor</code>.
+ * Interface which can be implemented to listen on changes of target handling changes notified by the
+ * {@link EnhancedTargetProductSelector}.
  */
-public class PathEditor extends FileEditor {
+public interface TargetHandlingListener {
 
-    @Override
-    public boolean isValidFor(PropertyDescriptor propertyDescriptor) {
-        return Path.class.isAssignableFrom(propertyDescriptor.getType())
-               && !Boolean.TRUE.equals(propertyDescriptor.getAttribute("directory"));
-    }
+  /**
+   * Called when the target handling has changed.
+   * @param shallSave whether the output should be saved to a file
+   * @param shallOpen whether the output should be opened in the application
+   */
+  void onChange(boolean shallSave, boolean shallOpen);
 
 }
