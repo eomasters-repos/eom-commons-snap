@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -55,7 +55,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
-  If not otherwise defined, masks are combined by an OR operation.
+ * If not otherwise defined, masks are combined by an AND operation.
  **/
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 public class ValidMaskImageBuilder {
@@ -68,7 +68,7 @@ public class ValidMaskImageBuilder {
 
   public ValidMaskImageBuilder(Product sourceProduct) {
     this.sourceProduct = sourceProduct;
-    operation = MaskOperation.OR;
+    operation = MaskOperation.AND;
   }
 
   public RenderedImage create() throws ValidMaskBuilderException {
@@ -86,7 +86,8 @@ public class ValidMaskImageBuilder {
   }
 
   /**
-   * Switches the combination operation to <code>OR</code>
+   * Switches the operation for combining the following masks to <code>OR</code>
+   *
    * @return the current builder instance
    */
   public ValidMaskImageBuilder or() {
@@ -95,7 +96,8 @@ public class ValidMaskImageBuilder {
   }
 
   /**
-   * Switches the combination operation to <code>AND</code>
+   * Switches the operation for combining the following masks to <code>AND</code>
+   *
    * @return the current builder instance
    */
   public ValidMaskImageBuilder and() {

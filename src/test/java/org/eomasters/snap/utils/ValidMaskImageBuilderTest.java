@@ -123,35 +123,30 @@ class ValidMaskImageBuilderTest {
   }
 
   @Test
-  void testCreateMaskAllDefaultOrCombined() throws ParseException, ValidMaskBuilderException {
+  void testCreateMaskAllDefaultAndCombined() throws ParseException, ValidMaskBuilderException {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
-    maskImageBuilder.withExpression("X == 10.5");
+    maskImageBuilder.withExpression("X >= 10.5 && X <= 70.5");
     // Rectangle from 40,9 to 74,46
     maskImageBuilder.withWkt(
         "POLYGON ((3.3258594917787736 -0.7772795216741405, 6.225710014947682 -0.7772795216741405, \n"
             + "   6.225710014947682 -3.8863976083707024, 3.3258594917787736 -3.8863976083707024, \n"
             + "   3.3258594917787736 -0.7772795216741405))");
-    // Rectangle from 27,28 to 60,64
-    maskImageBuilder.withShapeFile(getClass().getResource("geometry_Polygon.shp"));
-    RenderedImage maskImage = new ValidMaskImageBuilder(smallProduct).withExpression("X ==100.5 || Y==100.5").create();
+    RenderedImage maskImage = new ValidMaskImageBuilder(smallProduct).withExpression("X>=50.5 && X<=55.5").create();
     maskImageBuilder.withMaskImage(maskImage);
 
     RenderedImage validMaskImage = maskImageBuilder.create();
 
-    assertEquals(VALID, validMaskImage.getData().getSample(10, 0, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(10, 60, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(45, 9, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(3, 0, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(10, 60, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(45, 9, 0));
     assertEquals(VALID, validMaskImage.getData().getSample(53, 30, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(74, 46, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(27, 28, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(45, 46, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(55, 63, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(100, 100, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(100, 46, 0));
-    assertEquals(VALID, validMaskImage.getData().getSample(55, 100, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(74, 46, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(45, 46, 0));
+    assertEquals(VALID, validMaskImage.getData().getSample(52, 44, 0));
+    assertEquals(VALID, validMaskImage.getData().getSample(55, 15, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(100, 46, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(100, 100, 0));
 
-    assertEquals(INVALID, validMaskImage.getData().getSample(9, 0, 0));
-    assertEquals(INVALID, validMaskImage.getData().getSample(30, 80, 0));
 
   }
 
@@ -160,8 +155,8 @@ class ValidMaskImageBuilderTest {
   void testCreateMaskWithOr() throws ValidMaskBuilderException {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     RenderedImage validMaskImage = maskImageBuilder
-        .withExpression("X == 10.5")
         .or()
+        .withExpression("X == 10.5")
         .withExpression("Y==3.5")
         .create();
 
@@ -180,8 +175,8 @@ class ValidMaskImageBuilderTest {
   void testCreateMaskWithAnd() throws ValidMaskBuilderException {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     RenderedImage validMaskImage = maskImageBuilder
-        .withExpression("X == 10.5")
         .and()
+        .withExpression("X == 10.5")
         .withExpression("Y==3.5")
         .create();
 
@@ -193,6 +188,24 @@ class ValidMaskImageBuilderTest {
     assertEquals(INVALID, validMaskImage.getData().getSample(11, 0, 0));
     assertEquals(INVALID, validMaskImage.getData().getSample(0, 2, 0));
     assertEquals(INVALID, validMaskImage.getData().getSample(0, 4, 0));
+
+  }
+  @Test
+  void testCreateMaskWithANDandOR() throws ValidMaskBuilderException {
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
+    RenderedImage validMaskImage = maskImageBuilder
+        .and()
+        .withExpression("X >= 10.5")
+        .withExpression("Y>=3.5")
+        .or()
+        .withExpression("X == 4.5")
+        .create();
+
+    assertEquals(VALID, validMaskImage.getData().getSample(10, 3, 0));
+    assertEquals(VALID, validMaskImage.getData().getSample(12, 6, 0));
+    assertEquals(INVALID, validMaskImage.getData().getSample(10, 1, 0));
+
+    assertEquals(VALID, validMaskImage.getData().getSample(4, 2, 0));
 
   }
 }
