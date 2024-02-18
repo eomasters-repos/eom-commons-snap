@@ -34,17 +34,17 @@ import org.esa.snap.ui.AppContext;
 
 public abstract class AbstractOpAction extends AbstractSnapAction {
 
-  protected final OperatorSpi spi;
-  protected final String dialogTitle;
-  protected final Icon icon;
-  protected String helpId;
-  protected String opName;
+  private final OperatorSpi spi;
+  private final String dialogTitle;
+  private final Icon icon;
+  private final String helpId;
+  private final String opName;
 
-  public AbstractOpAction(String actionName, String helpId, String operatorName, String dialogTitle, Icon icon) {
-    this.helpId = helpId;
+  public AbstractOpAction(String actionName, Icon icon, String operatorName, String dialogTitle, String helpId) {
+    this.icon = icon;
     this.opName = operatorName;
     this.dialogTitle = dialogTitle;
-    this.icon = icon;
+    this.helpId = helpId;
     putValue(NAME, actionName);
     putValue(SMALL_ICON, icon.getImageIcon(Icon.SIZE.S16));
     putValue(LARGE_ICON_KEY, icon.getImageIcon(Icon.SIZE.S32));
@@ -54,7 +54,7 @@ public abstract class AbstractOpAction extends AbstractSnapAction {
              .getOperatorSpi(opName);
   }
 
-  abstract ParametersPanel<JPanel> getParametersPanel(OperatorDescriptor operatorDescriptor);
+  protected abstract ParametersPanel<JPanel> getParametersPanel(OperatorDescriptor operatorDescriptor);
 
   @Override
   public void actionPerformed(ActionEvent e) {
