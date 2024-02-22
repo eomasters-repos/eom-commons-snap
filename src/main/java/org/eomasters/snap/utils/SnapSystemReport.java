@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -30,8 +30,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -210,7 +212,15 @@ public class SnapSystemReport {
       // try (ReversedLinesFileReader reader = builder.get()) {
       try (ReversedLinesFileReader reader = new ReversedLinesFileReader(logFile.toFile(), 4096,
           StandardCharsets.UTF_8)) {
-        List<String> lines = reader.readLines(numLogTailLines);
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < numLogTailLines; i++) {
+          String line = reader.readLine();
+          if (line != null) {
+            lines.add(0, line);
+          }else {
+            break;
+          }
+        }
         lines.forEach(line -> report.append(line).append("\n"));
       } catch (IOException e) {
         report.append("Error while reading log file: ").append(e.getMessage()).append("\n");
