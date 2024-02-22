@@ -32,6 +32,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +212,7 @@ public class SnapSystemReport {
       try (ReversedLinesFileReader reader = new ReversedLinesFileReader(logFile.toFile(), 4096,
           StandardCharsets.UTF_8)) {
         List<String> lines = reader.readLines(numLogTailLines);
+        Collections.reverse(lines);
         lines.forEach(line -> report.append(line).append("\n"));
       } catch (IOException e) {
         report.append("Error while reading log file: ").append(e.getMessage()).append("\n");
