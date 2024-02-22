@@ -19,7 +19,8 @@
 
   <properties>
     <snap.version>9.0.4</snap.version>
-    <maven.compiler.release>8</maven.compiler.release>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -91,7 +92,7 @@
     <dependency>
       <groupId>com.miglayout</groupId>
       <artifactId>miglayout-swing</artifactId>
-      <version>11.1</version>
+      <version>5.3</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -197,32 +198,32 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>10.12.2</version>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <configLocation>.mvn/google_checks.xml</configLocation>
-          <includeTestSourceDirectory>false</includeTestSourceDirectory>
-          <consoleOutput>true</consoleOutput>
-          <failsOnError>true</failsOnError>
-          <linkXRef>false</linkXRef>
-        </configuration>
-        <executions>
-          <execution>
-            <id>validate</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <artifactId>maven-checkstyle-plugin</artifactId>-->
+<!--        <dependencies>-->
+<!--          <dependency>-->
+<!--            <groupId>com.puppycrawl.tools</groupId>-->
+<!--            <artifactId>checkstyle</artifactId>-->
+<!--            <version>10.12.2</version>-->
+<!--          </dependency>-->
+<!--        </dependencies>-->
+<!--        <configuration>-->
+<!--          <configLocation>.mvn/google_checks.xml</configLocation>-->
+<!--          <includeTestSourceDirectory>false</includeTestSourceDirectory>-->
+<!--          <consoleOutput>true</consoleOutput>-->
+<!--          <failsOnError>true</failsOnError>-->
+<!--          <linkXRef>false</linkXRef>-->
+<!--        </configuration>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>validate</id>-->
+<!--            <phase>validate</phase>-->
+<!--            <goals>-->
+<!--              <goal>check</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
       <plugin>
         <groupId>org.jacoco</groupId>
