@@ -184,8 +184,8 @@ public class OperatorExecutorDialog {
     private String formatDuration(Duration duration) {
       return String.format("%02d:%02d:%02d (hh:mm:ss)",
           duration.toHours(),
-          duration.toMinutesPart(),
-          duration.toSecondsPart());
+          duration.toMinutes() / 60,
+          duration.getSeconds() % (duration.toMinutes() * 60));
     }
 
 
