@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import org.eomasters.audio.Audios;
 import org.eomasters.gui.Dialogs;
-import org.eomasters.icons.Icon.SIZE;
+import org.eomasters.icons.Icon;
 import org.eomasters.icons.Icons;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
@@ -156,7 +156,7 @@ public class OperatorExecutorDialog {
         } else if (model.isOpenInAppSelected()) {
           appContext.getProductManager().addProduct(product);
           NotificationDisplayer.getDefault().notify(operatorName,
-              Icons.INFO.getImageIcon(SIZE.S24),
+              Icons.INFO.getImageIcon(Icon.SIZE_24),
               String.format(
                   "Product '%s' has been opened in %s. The actual processing is deferred until the data is requested.",
                   product.getName(), appContext.getApplicationName()), null, NORMAL);
