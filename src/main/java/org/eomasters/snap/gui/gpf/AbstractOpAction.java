@@ -46,8 +46,8 @@ public abstract class AbstractOpAction extends AbstractSnapAction {
     this.dialogTitle = dialogTitle;
     this.helpId = helpId;
     putValue(NAME, actionName);
-    putValue(SMALL_ICON, icon.getImageIcon(Icon.SIZE.S16));
-    putValue(LARGE_ICON_KEY, icon.getImageIcon(Icon.SIZE.S32));
+    putValue(SMALL_ICON, icon.getImageIcon(Icon.SIZE_16));
+    putValue(LARGE_ICON_KEY, icon.getImageIcon(Icon.SIZE_32));
 
     spi = GPF.getDefaultInstance()
              .getOperatorSpiRegistry()
@@ -67,7 +67,7 @@ public abstract class AbstractOpAction extends AbstractSnapAction {
     }
     OperatorDescriptor opDescriptor = spi.getOperatorDescriptor();
     OperatorDialog dialog = new OperatorDialog(opDescriptor, dialogTitle, helpId, appContext);
-    dialog.setIcon(icon.getImageIcon(Icon.SIZE.S32));
+    dialog.setIcon(icon.getImageIcon(Icon.SIZE_32));
     dialog.setParametersPanel(getParametersPanel(opDescriptor));
     return dialog;
   }
