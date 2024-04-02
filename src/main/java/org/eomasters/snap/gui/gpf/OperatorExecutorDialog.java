@@ -152,7 +152,7 @@ public class OperatorExecutorDialog {
               "<html>Processing completed in <b>%s</b>.<br>" +
                   "Product has been written to<br><b>%s</b>",
               formatDuration(duration), productFile);
-          Dialogs.message(operatorName, message);
+          Dialogs.message(null, operatorName, message);
         } else if (model.isOpenInAppSelected()) {
           appContext.getProductManager().addProduct(product);
           NotificationDisplayer.getDefault().notify(operatorName,
@@ -167,7 +167,7 @@ public class OperatorExecutorDialog {
         // ignore
       } catch (Throwable t) {
         if (t.getCause() instanceof OperatorCancelException) {
-          Dialogs.message(operatorName, "Processing cancelled.");
+          Dialogs.message(null, operatorName, "Processing cancelled.");
         } else {
           Dialogs.error(operatorName, "Error during processing.", t.getCause());
         }
