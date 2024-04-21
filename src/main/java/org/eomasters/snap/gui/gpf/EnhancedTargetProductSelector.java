@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -44,7 +44,7 @@ class EnhancedTargetProductSelector extends TargetProductSelector {
   /**
    * Creates a new instance.
    *
-   * @param appContext      the application context
+   * @param appContext        the application context
    * @param alwaysWriteOutput whether the output should always be written to a file
    */
   public EnhancedTargetProductSelector(AppContext appContext, boolean alwaysWriteOutput) {
@@ -57,8 +57,8 @@ class EnhancedTargetProductSelector extends TargetProductSelector {
       getOpenInAppCheckBox().setText("Open in " + appContext.getApplicationName());
     }
     getModel().getValueContainer().addPropertyChangeListener(evt -> {
-      if (evt.getPropertyName().equals("saveToFileSelected") ||
-          evt.getPropertyName().equals("openInAppSelected")) {
+      if (evt.getPropertyName().equals("saveToFileSelected")
+          || evt.getPropertyName().equals("openInAppSelected")) {
         if (targetHandlingListener != null) {
           targetHandlingListener.onChange(getModel().isSaveToFileSelected(), getModel().isOpenInAppSelected());
         }
@@ -70,7 +70,7 @@ class EnhancedTargetProductSelector extends TargetProductSelector {
   @Override
   public JPanel createDefaultPanel() {
     JPanel defaultPanel = super.createDefaultPanel();
-    if(targetHandlingListener != null) {
+    if (targetHandlingListener != null) {
       // inform the listener initially
       targetHandlingListener.onChange(getModel().isSaveToFileSelected(), getModel().isOpenInAppSelected());
     }
@@ -79,6 +79,7 @@ class EnhancedTargetProductSelector extends TargetProductSelector {
 
   /**
    * Sets the listener for output handling changes.
+   *
    * @param listener the listener
    */
   void setTargetHandlingListener(TargetHandlingListener listener) {

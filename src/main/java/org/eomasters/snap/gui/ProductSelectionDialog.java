@@ -49,10 +49,10 @@ public class ProductSelectionDialog extends ModalDialog {
    *
    * @param parent   the parent window
    * @param products the products to select from
-   * @param helpID   the help ID
+   * @param helpId   the help ID
    */
-  public ProductSelectionDialog(Window parent, List<ProductSelection> products, String helpID) {
-    super(parent, "Product Selection", ModalDialog.ID_OK_CANCEL, helpID);
+  public ProductSelectionDialog(Window parent, List<ProductSelection> products, String helpId) {
+    super(parent, "Product Selection", ModalDialog.ID_OK_CANCEL, helpId);
     listModel = new ProductTableModel(products);
   }
 

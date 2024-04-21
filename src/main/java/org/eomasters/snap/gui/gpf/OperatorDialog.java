@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -38,6 +38,7 @@ import org.eomasters.gui.Highlighter;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
 import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
+import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.OperatorMenu;
 import org.esa.snap.core.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
@@ -45,13 +46,15 @@ import org.esa.snap.ui.AppContext;
 import org.esa.snap.ui.ModelessDialog;
 
 /**
- * A dialog for an operator.
+ * A dialog for an operator. Compared to {@link DefaultSingleTargetProductDialog}, this dialog uses a
+ * {@link EnhancedTargetProductSelector} which fixes reaction to changes in the target and updates the apply button
+ * properly.
  */
 public class OperatorDialog extends ModelessDialog {
 
   private final AppContext appContext;
   private final OperatorDescriptor operatorDescriptor;
-  private final JTabbedPane form;
+  private final JTabbedPane tabbedPane;
   private boolean alwaysWriteTarget;
   private ParametersPanel<JPanel> parametersPanel;
   private DefaultIOParametersPanel ioPanel;
@@ -64,15 +67,15 @@ public class OperatorDialog extends ModelessDialog {
    *
    * @param operatorDescriptor the operator descriptor
    * @param title              the dialog title
-   * @param helpID             the help ID
+   * @param helpId             the help ID
    * @param appContext         the application context
    */
-  public OperatorDialog(OperatorDescriptor operatorDescriptor, String title, String helpID, AppContext appContext) {
-    super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE_HELP, helpID);
+  public OperatorDialog(OperatorDescriptor operatorDescriptor, String title, String helpId, AppContext appContext) {
+    super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE_HELP, helpId);
     this.operatorDescriptor = operatorDescriptor;
     this.appContext = appContext;
     productSuffix = "_" + (operatorDescriptor.getAlias() != null ? operatorDescriptor.getAlias() : "").toLowerCase();
-    form = new JTabbedPane();
+    tabbedPane = new JTabbedPane();
     renameApplyButtonToRun();
   }
 
@@ -87,6 +90,7 @@ public class OperatorDialog extends ModelessDialog {
 
   /**
    * Sets whether the target should always be written to a file.
+   *
    * @param alwaysWriteTarget {@code true} if the target should always be written to a file
    */
   public void setAlwaysWriteTarget(boolean alwaysWriteTarget) {
@@ -95,7 +99,7 @@ public class OperatorDialog extends ModelessDialog {
 
   /**
    * Sets the parameters panel.
-
+   *
    * @param parametersPanel the parameters panel
    */
   public void setParametersPanel(ParametersPanel<JPanel> parametersPanel) {
@@ -104,6 +108,7 @@ public class OperatorDialog extends ModelessDialog {
 
   /**
    * Sets the icon of the dialog.
+   *
    * @param imageIcon the icon
    */
   public void setIcon(ImageIcon imageIcon) {
@@ -113,16 +118,16 @@ public class OperatorDialog extends ModelessDialog {
 
   @Override
   public int show() {
-    setContent(form);
+    setContent(tabbedPane);
     targetProductSelector = new EnhancedTargetProductSelector(appContext, alwaysWriteTarget);
     targetProductSelector.setTargetHandlingListener(new RunButtonUpdater(appContext));
 
     ioPanel = new DefaultIOParametersPanel(appContext, operatorDescriptor, targetProductSelector);
     ioPanel.initSourceProductSelectors();
-    form.add("I/O Parameters", ioPanel);
+    tabbedPane.add("I/O Parameters", ioPanel);
     if (parametersPanel != null) {
       parametersScrollPanel = new JScrollPane(parametersPanel.getComponent());
-      form.add("Processing Parameters", parametersScrollPanel);
+      tabbedPane.add("Processing Parameters", parametersScrollPanel);
       parametersPanel.onSourceProductSelectionChanged(ioPanel.createSourceProductsMap(), null);
       addSourceProductChangedListener(ioPanel);
     }
@@ -148,7 +153,7 @@ public class OperatorDialog extends ModelessDialog {
       return;
     }
 
-    final OperatorExecutorDialog worker = new OperatorExecutorDialog(operatorDescriptor.getAlias(),
+    final OperatorExecutionDialog worker = new OperatorExecutionDialog(operatorDescriptor.getAlias(),
         targetProductSelector.getModel(), ioPanel.createSourceProductsMap(), parametersPanel.getParametersMap(),
         getJDialog(), appContext);
     worker.process();
@@ -164,7 +169,7 @@ public class OperatorDialog extends ModelessDialog {
     if (parametersPanel != null) {
       ValidationResult validationResult = parametersPanel.doValidation();
       if (!validationResult.isValid()) {
-        form.setSelectedComponent(parametersScrollPanel);
+        tabbedPane.setSelectedComponent(parametersScrollPanel);
         Highlighter.error(validationResult.getComponent(), validationResult.getValidationMessage());
         return false;
       }
@@ -179,7 +184,7 @@ public class OperatorDialog extends ModelessDialog {
     ArrayList<SourceProductSelector> selectorList = ioPanel.getSourceProductSelectorList();
     for (SourceProductSelector sourceProductSelector : selectorList) {
       if (sourceProductSelector.getSelectedProduct() == null) {
-        form.setSelectedComponent(ioPanel);
+        tabbedPane.setSelectedComponent(ioPanel);
         Highlighter.error(sourceProductSelector.getProductNameComboBox(), "Please specify a source product.");
         return true;
       }
@@ -187,7 +192,7 @@ public class OperatorDialog extends ModelessDialog {
 
     final String productName = targetProductSelector.getModel().getProductName();
     if (productName == null || productName.isEmpty()) {
-      form.setSelectedComponent(ioPanel);
+      tabbedPane.setSelectedComponent(ioPanel);
       Highlighter.error(targetProductSelector.getProductNameTextField(), "Please specify a target product name.");
       targetProductSelector.getProductNameTextField().requestFocus();
       return false;
@@ -219,7 +224,7 @@ public class OperatorDialog extends ModelessDialog {
       }
       sb.append("</ul><br>Do you want to continue?");
       if (!Dialogs.confirmation(getTitle(), sb.toString(), getJDialog())) {
-        form.setSelectedComponent(ioPanel);
+        tabbedPane.setSelectedComponent(ioPanel);
         Highlighter.error(targetProductSelector.getProductNameTextField(), "Please change the target product.");
         return false;
       }

@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -32,10 +32,20 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.PointOpImage;
 
-public class MaskProcessingOpImage extends PointOpImage {
+/**
+ * An image which masks another image. Only the pixels in the mask image are used, pixels outside the mask are set to
+ * NaN. This ensures that only the pixels in the mask are processed.
+ */
+public class MaskedOpImage extends PointOpImage {
 
-  public MaskProcessingOpImage(RenderedImage processing, RenderedImage maskImage) {
-    super(processing, maskImage, new ImageLayout(processing), null, false);
+  /**
+   * Creates a new masked image.
+   *
+   * @param source    the source image
+   * @param maskImage the mask image
+   */
+  public MaskedOpImage(RenderedImage source, RenderedImage maskImage) {
+    super(source, maskImage, new ImageLayout(source), null, false);
   }
 
   @Override
@@ -55,7 +65,7 @@ public class MaskProcessingOpImage extends PointOpImage {
           } else {
             dest.setSample(x, y, 0, sourceRaster.getSample(x, y, 0));
           }
-        }else {
+        } else {
           dest.setSample(x, y, 0, Double.NaN);
         }
       }

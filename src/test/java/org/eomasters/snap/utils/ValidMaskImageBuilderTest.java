@@ -77,11 +77,11 @@ class ValidMaskImageBuilderTest {
   }
 
   @Test
-  void testCreateMaskWithWktGeometry() throws ParseException, ValidMaskBuilderException {
+  void testCreateMaskWithGeometryArea() throws ParseException, ValidMaskBuilderException {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
 
     // Rectangle from 40,9 to 74,46
-    maskImageBuilder.withWkt(new WKTReader().read(
+    maskImageBuilder.withGeometryArea(new WKTReader().read(
         "POLYGON ((3.3258594917787736 -0.7772795216741405, 6.225710014947682 -0.7772795216741405, \n"
             + "   6.225710014947682 -3.8863976083707024, 3.3258594917787736 -3.8863976083707024, \n"
             + "   3.3258594917787736 -0.7772795216741405))"));
@@ -127,7 +127,7 @@ class ValidMaskImageBuilderTest {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
     maskImageBuilder.withExpression("X >= 10.5 && X <= 70.5");
     // Rectangle from 40,9 to 74,46
-    maskImageBuilder.withWkt(
+    maskImageBuilder.withWktArea(
         "POLYGON ((3.3258594917787736 -0.7772795216741405, 6.225710014947682 -0.7772795216741405, \n"
             + "   6.225710014947682 -3.8863976083707024, 3.3258594917787736 -3.8863976083707024, \n"
             + "   3.3258594917787736 -0.7772795216741405))");

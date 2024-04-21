@@ -55,7 +55,7 @@ import org.openide.awt.NotificationDisplayer;
  * A dialog for executing an operator and showing the progress of the processing is the target product shall be written
  * to disk.
  */
-public class OperatorExecutorDialog {
+public class OperatorExecutionDialog {
 
   private final InternalSwingWorker internalWorker;
   private final boolean executeBlocking;
@@ -70,7 +70,7 @@ public class OperatorExecutorDialog {
    * @param parent         the parent component
    * @param appContext     the application context
    */
-  public OperatorExecutorDialog(String operatorName, TargetProductSelectorModel model,
+  public OperatorExecutionDialog(String operatorName, TargetProductSelectorModel model,
       Map<String, Product> sourceProducts,
       Map<String, Object> parametersMap, Component parent, AppContext appContext) {
     internalWorker = new InternalSwingWorker(operatorName, model, sourceProducts, parametersMap, parent, appContext);
@@ -149,8 +149,8 @@ public class OperatorExecutorDialog {
           }
           Path productFile = model.getProductFile().toPath();
           final String message = String.format(
-              "<html>Processing completed in <b>%s</b>.<br>" +
-                  "Product has been written to<br><b>%s</b>",
+              "<html>Processing completed in <b>%s</b>.<br>"
+                  + "Product has been written to<br><b>%s</b>",
               formatDuration(duration), productFile);
           Dialogs.message(null, operatorName, message);
         } else if (model.isOpenInAppSelected()) {

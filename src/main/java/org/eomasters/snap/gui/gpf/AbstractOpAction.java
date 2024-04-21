@@ -32,6 +32,9 @@ import org.esa.snap.core.gpf.descriptor.OperatorDescriptor;
 import org.esa.snap.rcp.actions.AbstractSnapAction;
 import org.esa.snap.ui.AppContext;
 
+/**
+ * Abstract action for operators which simplifies which allows the dialog and the menu item to have an icon.
+ */
 public abstract class AbstractOpAction extends AbstractSnapAction {
 
   private final OperatorSpi spi;
@@ -40,6 +43,15 @@ public abstract class AbstractOpAction extends AbstractSnapAction {
   private final String helpId;
   private final String opName;
 
+  /**
+   * Creates a new action for an operator.
+   *
+   * @param actionName The name of the action
+   * @param icon The icon
+   * @param operatorName The name of the operator
+   * @param dialogTitle The title of the dialog
+   * @param helpId The help id
+   */
   public AbstractOpAction(String actionName, Icon icon, String operatorName, String dialogTitle, String helpId) {
     this.icon = icon;
     this.opName = operatorName;

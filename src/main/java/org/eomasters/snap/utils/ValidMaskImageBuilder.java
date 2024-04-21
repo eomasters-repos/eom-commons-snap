@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -55,7 +55,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * If not otherwise defined, masks are combined by an AND operation.
+ * A builder for creating a valid mask image. If not otherwise defined, masks are combined by an AND operation.
  **/
 @SuppressWarnings({"UnusedReturnValue", "unused"})
 public class ValidMaskImageBuilder {
@@ -66,11 +66,22 @@ public class ValidMaskImageBuilder {
   private MaskOperation operation;
 
 
-  public ValidMaskImageBuilder(Product sourceProduct) {
-    this.sourceProduct = sourceProduct;
+  /**
+   * Creates a new builder for the given source product.
+   *
+   * @param product the product to create the mask from
+   */
+  public ValidMaskImageBuilder(Product product) {
+    this.sourceProduct = product;
     operation = MaskOperation.AND;
   }
 
+  /**
+   * Creates the mask image.
+   *
+   * @return the mask image
+   * @throws ValidMaskBuilderException if no mask image was defined
+   */
   public RenderedImage create() throws ValidMaskBuilderException {
     if (maskImages.isEmpty()) {
       return createConstantMask(VALID);
@@ -86,7 +97,7 @@ public class ValidMaskImageBuilder {
   }
 
   /**
-   * Switches the operation for combining the following masks to <code>OR</code>
+   * Switches the operation for combining the following masks to <code>OR</code>.
    *
    * @return the current builder instance
    */
@@ -96,7 +107,7 @@ public class ValidMaskImageBuilder {
   }
 
   /**
-   * Switches the operation for combining the following masks to <code>AND</code>
+   * Switches the operation for combining the following masks to <code>AND</code>.
    *
    * @return the current builder instance
    */
@@ -106,6 +117,12 @@ public class ValidMaskImageBuilder {
   }
 
 
+  /**
+   * Adds a mask based on an image.
+   *
+   * @param maskImage the mask
+   * @return the current builder instance
+   */
   public ValidMaskImageBuilder withMaskImage(RenderedImage maskImage) {
     if (maskImage != null) {
       maskImages.add(new WrappedImage(operation, maskImage));
@@ -113,6 +130,12 @@ public class ValidMaskImageBuilder {
     return this;
   }
 
+  /**
+   * Adds a mask using a valid expression.
+   *
+   * @param validExpression the expression to be used as a mask
+   * @return the current builder instance
+   */
   public ValidMaskImageBuilder withExpression(String validExpression) {
     if (validExpression != null && !validExpression.isEmpty()) {
       maskImages.add(new ValidExprImage(operation, validExpression));
@@ -120,27 +143,39 @@ public class ValidMaskImageBuilder {
     return this;
   }
 
-  public ValidMaskImageBuilder withWkt(Geometry roi) {
-    if (roi != null) {
-      maskImages.add(new WktRoiImage(operation, roi));
+  /**
+   * Adds a mask using a geometry.
+   *
+   * @param area the geometry
+   * @return the current builder instance
+   */
+  public ValidMaskImageBuilder withGeometryArea(Geometry area) {
+    if (area != null) {
+      maskImages.add(new WktRoiImage(operation, area));
     }
     return this;
   }
 
-  public ValidMaskImageBuilder withWkt(String wktString) throws ParseException {
+  /**
+   * Adds a mask created from a WKT string.
+   *
+   * @param wktString the WKT string
+   * @return the current builder instance
+   * @throws ParseException if the WKT string is not valid
+   */
+  public ValidMaskImageBuilder withWktArea(String wktString) throws ParseException {
     if (wktString != null && !wktString.isEmpty()) {
       maskImages.add(new WktRoiImage(operation, new WKTReader().read(wktString)));
     }
     return this;
   }
 
-  public ValidMaskImageBuilder withShapeFile(File shapeFile) {
-    if (shapeFile != null) {
-      maskImages.add(new ShapefileImage(operation, shapeFile));
-    }
-    return this;
-  }
-
+  /**
+   * Adds a mask read from a shape file.
+   *
+   * @param shapeFile the path to the shape file
+   * @return the current builder instance
+   */
   public ValidMaskImageBuilder withShapeFile(Path shapeFile) {
     if (shapeFile != null) {
       maskImages.add(new ShapefileImage(operation, shapeFile));
@@ -148,6 +183,12 @@ public class ValidMaskImageBuilder {
     return this;
   }
 
+  /**
+   * Adds a mask read from a shape file.
+   *
+   * @param shapeUrl the url of the shape file
+   * @return the current builder instance
+   */
   public ValidMaskImageBuilder withShapeFile(URL shapeUrl) {
     if (shapeUrl != null) {
       maskImages.add(new ShapefileImage(operation, shapeUrl));
@@ -242,8 +283,9 @@ public class ValidMaskImageBuilder {
       SimpleFeature wktFeature = featureBuilder.buildFeature("ID" + Long.toHexString(System.currentTimeMillis()));
       wktFeature.setDefaultGeometry(geometry);
       newCollection.add(wktFeature);
-      FeatureCollection<SimpleFeatureType, SimpleFeature> wktFeatures = FeatureUtils.clipFeatureCollectionToProductBounds(
-          newCollection, sourceProduct, null, ProgressMonitor.NULL);
+      FeatureCollection<SimpleFeatureType, SimpleFeature> wktFeatures =
+          FeatureUtils.clipFeatureCollectionToProductBounds(newCollection, sourceProduct,
+              null, ProgressMonitor.NULL);
 
       VectorDataNode roiNode = new VectorDataNode("WktRoiImage", wktFeatures);
       roiNode.setOwner(sourceProduct);

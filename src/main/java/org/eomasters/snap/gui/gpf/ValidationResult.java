@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -60,6 +60,8 @@ public class ValidationResult {
   }
 
   /**
+   * Checks if the validation is successful.
+   *
    * @return <code>true</code> if the validation is successful, <code>false</code> otherwise
    */
   public boolean isValid() {
@@ -67,6 +69,8 @@ public class ValidationResult {
   }
 
   /**
+   * Gets the validation message.
+   *
    * @return the validation message
    */
   public String getValidationMessage() {
@@ -74,6 +78,8 @@ public class ValidationResult {
   }
 
   /**
+   * Gets the component that caused the validation error.
+   *
    * @return the component that caused the validation error
    */
   public JComponent getComponent() {
