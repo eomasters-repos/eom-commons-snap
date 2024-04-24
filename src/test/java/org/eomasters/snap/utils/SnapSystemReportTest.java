@@ -41,7 +41,7 @@ class SnapSystemReportTest {
     report = sr.generate();
     assertTrue(report.startsWith("Error Report"));
     assertTrue(report.contains("Stacktrace:"));
-    assertTrue(report.contains("System Log Tail:"));
+    assertTrue(report.contains("System Log Tail (10 lines):"));
 
     System.out.println(report);
   }
