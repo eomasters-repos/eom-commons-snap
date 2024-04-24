@@ -15,13 +15,13 @@
 
   <groupId>org.eomasters</groupId>
   <artifactId>eom-commons-snap</artifactId>
-  <version>0.2.3-SNAPSHOT</version>
+  <version>0.2.3</version>
 
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
     <snap.version>10.0.0</snap.version>
+    <deploy.dir>${project.build.directory}/mvn-repo</deploy.dir>
   </properties>
 
   <dependencyManagement>
@@ -318,7 +318,7 @@
   <distributionManagement>
     <repository>
       <id>internal</id>
-      <url>file://${project.build.directory}/mvn-repo</url>
+      <url>file://${deploy.dir}</url>
     </repository>
   </distributionManagement>
 
