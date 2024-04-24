@@ -201,7 +201,7 @@ public class SnapSystemReport {
 
   private void addLogTail(StringBuilder report) {
     if (numLogTailLines > 0) {
-      report.append("System Log Tail:\n");
+      report.append(String.format("System Log Tail (%d lines):", numLogTailLines)).append("\n");
 
       Path logFile = getCurrentLogFile();
       // builder doesn't work within snap. Seem it has an old version of commons-io.
