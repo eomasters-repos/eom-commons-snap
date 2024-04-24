@@ -15,7 +15,7 @@
 
   <groupId>org.eomasters</groupId>
   <artifactId>eom-commons-snap</artifactId>
-  <version>0.2.3</version>
+  <version>0.2.4-SNAPSHOT</version>
 
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
