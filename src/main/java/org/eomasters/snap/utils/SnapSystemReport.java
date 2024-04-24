@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -38,9 +38,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import org.apache.commons.io.input.ReversedLinesFileReader;
+import org.eomasters.utils.TextUtils;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductManager;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.openide.modules.ModuleInfo;
@@ -188,7 +191,7 @@ public class SnapSystemReport {
     addBasicInformation(report);
     addStackTrace(report);
     addProductList(report);
-    // addInstalledModules(report);
+    addInstalledModules(report);
     addPreferences(report);
     addSystemProperties(report);
     addEnvironmentVariables(report);
@@ -269,18 +272,26 @@ public class SnapSystemReport {
     report.append("Installed Modules:\n");
     try {
       Collection<? extends ModuleInfo> modules = Lookup.getDefault().lookupAll(ModuleInfo.class);
-      modules.stream().sorted(Comparator.comparing((ModuleInfo o) -> o.getCodeNameBase())).forEach(
-          info -> report.append(info.getDisplayName())
-                        .append("\n")
-                        .append("\tcode name: ")
-                        .append(info.getCodeNameBase())
-                        .append("\n")
-                        .append("\tversion: ")
-                        .append(info.getImplementationVersion())
-                        .append("\n")
-                        .append("\tenabled: ")
-                        .append(info.isEnabled())
-                        .append("\n"));
+      if (modules.isEmpty()) {
+        report.append("No modules found.\n");
+      }
+
+      String[][] tableData = new String[modules.size() + 1][4];
+      tableData[0][0] = "Module";
+      tableData[0][1] = "Code Name";
+      tableData[0][2] = "Version";
+      tableData[0][3] = "Enabled";
+      modules = modules.stream().sorted(Comparator.comparing(ModuleInfo::getDisplayName))
+                       .collect(Collectors.toList());
+      int i = 1;
+      for (ModuleInfo info : modules) {
+        tableData[i][0] = info.getDisplayName();
+        tableData[i][1] = info.getCodeNameBase();
+        tableData[i][2] = info.getImplementationVersion();
+        tableData[i][3] = String.valueOf(info.isEnabled());
+        i++;
+      }
+      report.append(TextUtils.asFormattedTable(tableData));
     } catch (Throwable e) {
       report.append("Error while while retrieving module information:\n").append("\t").append(e.getMessage())
             .append("\n");
@@ -322,7 +333,11 @@ public class SnapSystemReport {
   }
 
   private void addBasicInformation(StringBuilder report) {
-    report.append(getTitle()).append(": ").append(getMessage()).append("\n");
+    report.append(getTitle());
+    if (StringUtils.isNotNullAndNotEmpty(getMessage())) {
+      report.append(": ").append(getMessage());
+    }
+    report.append("\n");
     report.append("Time: ").append(getCreatedAt()).append("\n");
     if (getName() != null) {
       report.append("Report Name: ").append(getName()).append("\n");

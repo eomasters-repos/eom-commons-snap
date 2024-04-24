@@ -43,5 +43,6 @@ class SnapSystemReportTest {
     assertTrue(report.contains("Stacktrace:"));
     assertTrue(report.contains("System Log Tail:"));
 
+    System.out.println(report);
   }
 }
