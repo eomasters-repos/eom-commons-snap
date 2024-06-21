@@ -21,7 +21,7 @@
     <maven.compiler.release>11</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <snap.version>10.0.0</snap.version>
-    <eom-commons.version>0.3.3</eom-commons.version>
+    <eom-commons.version>0.3.4-SNAPSHOT</eom-commons.version>
     <deploy.dir>${project.build.directory}/mvn-repo</deploy.dir>
   </properties>
 
