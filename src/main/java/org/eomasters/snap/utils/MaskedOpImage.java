@@ -50,9 +50,9 @@ public class MaskedOpImage extends PointOpImage {
 
   @Override
   protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
-    Raster sourceRaster = sources[0].getData();
+    Raster sourceRaster = sources[0].getData(destRect);
     int sourceDataType = sourceRaster.getSampleModel().getDataType();
-    Raster maskRaster = sources[1].getData();
+    Raster maskRaster = sources[1].getData(destRect);
     int[] maskLine = new int[destRect.width];
     for (int y = destRect.y; y < destRect.y + destRect.height; y++) {
       maskRaster.getSamples(destRect.x, y, destRect.width, 1, 0, maskLine);
