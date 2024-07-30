@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -49,6 +49,19 @@ class ValidMaskImageBuilderTest {
   }
 
   @Test
+  void testTilingWithLargeProduct() throws ValidMaskBuilderException {
+    DummyProductBuilder builder = new DummyProductBuilder();
+    Product largeProduct = builder.size(Size.LARGE).create();
+    ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(largeProduct);
+    maskImageBuilder.withExpression("Y >= 10.5 && Y <= 600.5");
+    maskImageBuilder.withTileSize(largeProduct.getPreferredTileSize());
+    RenderedImage validMaskImage = maskImageBuilder.create();
+
+    assertEquals(largeProduct.getPreferredTileSize().getWidth(), validMaskImage.getTileWidth());
+    assertEquals(largeProduct.getPreferredTileSize().getHeight(), validMaskImage.getTileHeight());
+  }
+
+  @Test
   void testMultiTileProduct() throws ValidMaskBuilderException {
     DummyProductBuilder builder = new DummyProductBuilder();
     Product middleProduct = builder.size(Size.MEDIUM).create();
@@ -62,6 +75,8 @@ class ValidMaskImageBuilderTest {
     assertEquals(VALID, validMaskImage.getData().getSample(10, 590, 0));
     assertEquals(INVALID, validMaskImage.getData().getSample(10, 700, 0));
   }
+
+
   @Test
   void testCreateValidExpressionMask() throws ValidMaskBuilderException {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);
@@ -190,6 +205,7 @@ class ValidMaskImageBuilderTest {
     assertEquals(INVALID, validMaskImage.getData().getSample(0, 4, 0));
 
   }
+
   @Test
   void testCreateMaskWithANDandOR() throws ValidMaskBuilderException {
     ValidMaskImageBuilder maskImageBuilder = new ValidMaskImageBuilder(smallProduct);

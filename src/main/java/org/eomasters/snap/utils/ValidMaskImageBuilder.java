@@ -26,6 +26,7 @@ package org.eomasters.snap.utils;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import java.awt.Dimension;
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.PlainFeatureFactory;
@@ -41,6 +43,7 @@ import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.image.VirtualBandOpImage;
 import org.esa.snap.core.jexp.Term;
 import org.esa.snap.core.util.FeatureUtils;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
@@ -61,9 +64,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class ValidMaskImageBuilder {
 
   private static final int VALID = 255;
+  private static final Dimension FALL_BACK_TILESIZE = new Dimension(128, 128);
   private final Product sourceProduct;
   private final ArrayList<MaskImage> maskImages = new ArrayList<>();
-  private MaskOperation operation;
+  private MaskOperation joinOperation;
+  private Dimension tileSize;
 
 
   /**
@@ -73,7 +78,7 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder(Product product) {
     this.sourceProduct = product;
-    operation = MaskOperation.AND;
+    joinOperation = MaskOperation.AND;
   }
 
   /**
@@ -86,10 +91,10 @@ public class ValidMaskImageBuilder {
     if (maskImages.isEmpty()) {
       return createConstantMask(VALID);
     }
-    RenderedImage mask = maskImages.get(0).create(sourceProduct);
+    RenderedImage mask = maskImages.get(0).create(sourceProduct, getEffectiveTileSize());
     for (int i = 1; i < maskImages.size(); i++) {
       MaskImage element = maskImages.get(i);
-      RenderedImage maskImage = element.create(sourceProduct);
+      RenderedImage maskImage = element.create(sourceProduct, getEffectiveTileSize());
       mask = JAI.create(element.getOperationName(), mask, maskImage);
     }
 
@@ -102,7 +107,7 @@ public class ValidMaskImageBuilder {
    * @return the current builder instance
    */
   public ValidMaskImageBuilder or() {
-    operation = MaskOperation.OR;
+    joinOperation = MaskOperation.OR;
     return this;
   }
 
@@ -112,7 +117,7 @@ public class ValidMaskImageBuilder {
    * @return the current builder instance
    */
   public ValidMaskImageBuilder and() {
-    operation = MaskOperation.AND;
+    joinOperation = MaskOperation.AND;
     return this;
   }
 
@@ -125,7 +130,7 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder withMaskImage(RenderedImage maskImage) {
     if (maskImage != null) {
-      maskImages.add(new WrappedImage(operation, maskImage));
+      maskImages.add(new WrappedImage(joinOperation, maskImage));
     }
     return this;
   }
@@ -138,7 +143,7 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder withExpression(String validExpression) {
     if (validExpression != null && !validExpression.isEmpty()) {
-      maskImages.add(new ValidExprImage(operation, validExpression));
+      maskImages.add(new ValidExprImage(joinOperation, validExpression));
     }
     return this;
   }
@@ -151,7 +156,7 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder withGeometryArea(Geometry area) {
     if (area != null) {
-      maskImages.add(new WktRoiImage(operation, area));
+      maskImages.add(new WktRoiImage(joinOperation, area));
     }
     return this;
   }
@@ -165,7 +170,7 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder withWktArea(String wktString) throws ParseException {
     if (wktString != null && !wktString.isEmpty()) {
-      maskImages.add(new WktRoiImage(operation, new WKTReader().read(wktString)));
+      maskImages.add(new WktRoiImage(joinOperation, new WKTReader().read(wktString)));
     }
     return this;
   }
@@ -178,8 +183,20 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder withShapeFile(Path shapeFile) {
     if (shapeFile != null) {
-      maskImages.add(new ShapefileImage(operation, shapeFile));
+      maskImages.add(new ShapefileImage(joinOperation, shapeFile));
     }
+    return this;
+  }
+
+  /**
+   * Sets the preferred tile size for creating the mask image. If not provided the preferred tile size of the source
+   * product will be used, if also not available a default tile size of [128,128] will be used.
+   *
+   * @param preferredTileSize the preferred tile size
+   * @return the updated ValidMaskImageBuilder instance
+   */
+  public ValidMaskImageBuilder withTileSize(Dimension preferredTileSize) {
+    this.tileSize = preferredTileSize;
     return this;
   }
 
@@ -191,7 +208,7 @@ public class ValidMaskImageBuilder {
    */
   public ValidMaskImageBuilder withShapeFile(URL shapeUrl) {
     if (shapeUrl != null) {
-      maskImages.add(new ShapefileImage(operation, shapeUrl));
+      maskImages.add(new ShapefileImage(joinOperation, shapeUrl));
     }
     return this;
   }
@@ -203,9 +220,24 @@ public class ValidMaskImageBuilder {
     pb.add(Float.valueOf(dimension.width));
     pb.add(Float.valueOf(dimension.height));
     pb.add(new Byte[]{(byte) value});
-    return JAI.create("Constant", pb, null);
+
+    Dimension tileSize = getEffectiveTileSize();
+    ImageLayout tileLayout = new ImageLayout();
+    tileLayout.setTileWidth(tileSize.width);
+    tileLayout.setTileHeight(tileSize.height);
+
+    return JAI.create("Constant", pb, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, tileLayout));
   }
 
+  private Dimension getEffectiveTileSize() {
+    if (tileSize != null) {
+      return tileSize;
+    } else if (sourceProduct.getPreferredTileSize() != null) {
+      return sourceProduct.getPreferredTileSize();
+    } else {
+      return FALL_BACK_TILESIZE;
+    }
+  }
 
   private enum MaskOperation {
     OR, AND
@@ -219,7 +251,7 @@ public class ValidMaskImageBuilder {
       this.operation = operation;
     }
 
-    public abstract RenderedImage create(Product product) throws ValidMaskBuilderException;
+    public abstract RenderedImage create(Product product, Dimension tileSize) throws ValidMaskBuilderException;
 
     String getOperationName() {
       return operation.name();
@@ -236,8 +268,8 @@ public class ValidMaskImageBuilder {
     }
 
     @Override
-    public RenderedImage create(Product product) {
-      return image;
+    public RenderedImage create(Product product, Dimension tileSize) {
+      return JAIUtils.createTileFormatOp(image, tileSize.width, tileSize.height);
     }
   }
 
@@ -251,13 +283,15 @@ public class ValidMaskImageBuilder {
     }
 
     @Override
-    public RenderedImage create(Product product) throws ValidMaskBuilderException {
+    public RenderedImage create(Product product, Dimension tileSize) throws ValidMaskBuilderException {
       if (validExpression == null || validExpression.isEmpty()) {
         throw new ValidMaskBuilderException("Expression must not be null or empty.");
       }
       Term term = VirtualBandOpImage.parseExpression(validExpression, product);
-      VirtualBandOpImage.Builder builder = VirtualBandOpImage.builder(term).sourceSize(product.getSceneRasterSize());
-      builder.mask(true);
+      VirtualBandOpImage.Builder builder = VirtualBandOpImage.builder(term).
+                                                             sourceSize(product.getSceneRasterSize())
+                                                             .tileSize(tileSize)
+                                                             .mask(true);
       return builder.create();
     }
   }
@@ -272,7 +306,7 @@ public class ValidMaskImageBuilder {
     }
 
     @Override
-    public RenderedImage create(Product product) throws ValidMaskBuilderException {
+    public RenderedImage create(Product product, Dimension tileSize) throws ValidMaskBuilderException {
       if (geometry == null) {
         throw new ValidMaskBuilderException("Geometry must not be null.");
       }
@@ -295,8 +329,7 @@ public class ValidMaskImageBuilder {
       Mask.VectorDataType.setVectorData(wktRoiMask, roiNode);
       wktRoiMask.setOwner(sourceProduct);
       MultiLevelImage sourceImage = wktRoiMask.getSourceImage();
-
-      return sourceImage.getImage(0);
+      return JAIUtils.createTileFormatOp(sourceImage.getImage(0), tileSize.width, tileSize.height);
     }
   }
 
@@ -319,7 +352,7 @@ public class ValidMaskImageBuilder {
 
 
     @Override
-    public RenderedImage create(Product product) throws ValidMaskBuilderException {
+    public RenderedImage create(Product product, Dimension tileSize) throws ValidMaskBuilderException {
       if (shapeFile == null) {
         throw new ValidMaskBuilderException("Shapefile must not be null.");
       }
@@ -339,8 +372,7 @@ public class ValidMaskImageBuilder {
       Mask shapefileMaks = new Mask("m", dimension.width, dimension.height, Mask.VectorDataType.INSTANCE);
       shapefileMaks.setOwner(sourceProduct);
       Mask.VectorDataType.setVectorData(shapefileMaks, shapefileRoiNode);
-      return shapefileMaks.getSourceImage().getImage(0);
-
+      return JAIUtils.createTileFormatOp(shapefileMaks.getSourceImage().getImage(0), tileSize.width, tileSize.height);
     }
 
     private class Wgs84CrsProvider implements FeatureUtils.FeatureCrsProvider {
