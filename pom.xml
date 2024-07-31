@@ -12,16 +12,22 @@
     <name>EOMasters</name>
     <url>https://www.eomasters.org</url>
   </organization>
+  <licenses>
+    <license>
+      <name>GPL 3</name>
+      <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+    </license>
+  </licenses>
 
   <groupId>org.eomasters</groupId>
   <artifactId>eom-commons-snap</artifactId>
-  <version>0.2.4</version>
+  <version>0.2.5</version>
 
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <snap.version>10.0.0</snap.version>
-    <eom-commons.version>0.3.3</eom-commons.version>
+    <eom-commons.version>0.3.4</eom-commons.version>
     <deploy.dir>${project.build.directory}/mvn-repo</deploy.dir>
   </properties>
 
