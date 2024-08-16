@@ -58,7 +58,6 @@ import org.openide.awt.NotificationDisplayer;
 public class OperatorExecutionDialog {
 
   private final InternalSwingWorker internalWorker;
-  private final boolean executeBlocking;
 
   /**
    * Creates a new progress dialog.
@@ -74,7 +73,6 @@ public class OperatorExecutionDialog {
       Map<String, Product> sourceProducts,
       Map<String, Object> parametersMap, Component parent, AppContext appContext) {
     internalWorker = new InternalSwingWorker(operatorName, model, sourceProducts, parametersMap, parent, appContext);
-    executeBlocking = model.isSaveToFileSelected();
   }
 
 
@@ -82,11 +80,7 @@ public class OperatorExecutionDialog {
    * Starts the processing of the operator.
    */
   public void process() {
-    if (executeBlocking) {
-      internalWorker.executeWithBlocking();
-    } else {
-      internalWorker.execute();
-    }
+    internalWorker.executeWithBlocking();
   }
 
 
