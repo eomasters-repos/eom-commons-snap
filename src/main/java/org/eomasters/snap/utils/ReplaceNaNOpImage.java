@@ -36,7 +36,7 @@ public final class ReplaceNaNOpImage extends PointOpImage {
 
   private final double replacementValue;
 
-  ReplaceNaNOpImage(RenderedImage source, double value) {
+  public ReplaceNaNOpImage(RenderedImage source, double value) {
     super(source, null, null, true);
     this.replacementValue = value;
     OperatorContext.setTileCache(this);
