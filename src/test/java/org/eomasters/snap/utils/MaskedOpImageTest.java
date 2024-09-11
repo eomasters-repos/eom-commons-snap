@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import org.junit.jupiter.api.Test;
 
 public class MaskedOpImageTest {
@@ -36,7 +37,7 @@ public class MaskedOpImageTest {
   public void testComputeRect() {
     Rectangle rect = new Rectangle(0, 0, 5, 5);
     BufferedImage sourceImage = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_BYTE_GRAY);
-    BufferedImage maskImage = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_BYTE_BINARY);
+    BufferedImage maskImage = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_BYTE_GRAY);
 
     // Create artificial raster
     for (int y = 0; y < rect.height; y++) {
@@ -46,7 +47,7 @@ public class MaskedOpImageTest {
       }
     }
 
-    MaskedOpImage maskedOpImage = new MaskedOpImage(sourceImage, maskImage);
+    RenderedImage maskedOpImage = new MaskedOpImage(sourceImage, maskImage, Float.NaN);
     // Compute and check result
     Raster data = maskedOpImage.getData(rect);
     for (int y = 0; y < rect.height; y++) {
@@ -73,7 +74,7 @@ public class MaskedOpImageTest {
     }
 
     // Compute and check result
-    MaskedOpImage maskedOpImage = new MaskedOpImage(sourceImage, maskImage);
+    RenderedImage maskedOpImage = new MaskedOpImage(sourceImage, maskImage, Float.NaN);
     Raster data = maskedOpImage.getData(rect);
     for (int y = 0; y < 5; y++) {
       for (int x = 0; x < 5; x++) {

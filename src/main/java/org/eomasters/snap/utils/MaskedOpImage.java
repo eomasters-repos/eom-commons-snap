@@ -28,48 +28,79 @@ import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.util.stream.IntStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.PointOpImage;
 
 /**
  * An image which masks another image. Only the pixels in the mask image are used, pixels outside the mask are set to
- * NaN. This ensures that only the pixels in the mask are processed.
+ * the provided fillValue.
  */
 public class MaskedOpImage extends PointOpImage {
+
+  private final Number fillValue;
 
   /**
    * Creates a new masked image.
    *
    * @param source    the source image
    * @param maskImage the mask image
+   * @param fillValue the fill value used for areas outside the mask image
    */
-  public MaskedOpImage(RenderedImage source, RenderedImage maskImage) {
+  public MaskedOpImage(RenderedImage source, RenderedImage maskImage, Number fillValue) {
     super(source, maskImage, new ImageLayout(source), null, false);
+    this.fillValue = fillValue;
   }
 
   @Override
   protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    Raster maskRaster = sources[1].getData(destRect);
+    int[] maskData = new int[destRect.width * destRect.height];
+    maskRaster.getSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, maskData);
+
     Raster sourceRaster = sources[0].getData(destRect);
     int sourceDataType = sourceRaster.getSampleModel().getDataType();
-    Raster maskRaster = sources[1].getData(destRect);
-    int[] maskLine = new int[destRect.width];
-    for (int y = destRect.y; y < destRect.y + destRect.height; y++) {
-      maskRaster.getSamples(destRect.x, y, destRect.width, 1, 0, maskLine);
-      for (int x = destRect.x; x < destRect.x + destRect.width; x++) {
-        if (maskLine[x - destRect.x] != 0) {
-          if (sourceDataType == DataBuffer.TYPE_FLOAT) {
-            dest.setSample(x, y, 0, sourceRaster.getSampleFloat(x, y, 0));
-          } else if (sourceDataType == DataBuffer.TYPE_DOUBLE) {
-            dest.setSample(x, y, 0, sourceRaster.getSampleDouble(x, y, 0));
-          } else {
-            dest.setSample(x, y, 0, sourceRaster.getSample(x, y, 0));
-          }
-        } else {
-          dest.setSample(x, y, 0, Double.NaN);
-        }
-      }
+    if (sourceDataType == DataBuffer.TYPE_DOUBLE) {
+      processDouble(sourceRaster, dest, destRect, maskData);
+    } else if (sourceDataType == DataBuffer.TYPE_FLOAT) {
+      processFloat(sourceRaster, dest, destRect, maskData);
+    } else {
+      processInt(sourceRaster, dest, destRect, maskData);
     }
+  }
+
+  private void processInt(Raster sourceRaster, WritableRaster dest, Rectangle destRect, int[] maskData) {
+    int[] destData = new int[destRect.width * destRect.height];
+    sourceRaster.getSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, destData);
+    IntStream.range(0, destData.length).forEach(i -> {
+      if (maskData[i] == 0) {
+        destData[i] = fillValue.intValue();
+      }
+    });
+    dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, destData);
+  }
+
+  private void processFloat(Raster sourceRaster, WritableRaster dest, Rectangle destRect, int[] maskData) {
+    float[] destData = new float[destRect.width * destRect.height];
+    sourceRaster.getSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, destData);
+    IntStream.range(0, destData.length).forEach(i -> {
+      if (maskData[i] == 0) {
+        destData[i] = fillValue.floatValue();
+      }
+    });
+    dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, destData);
+  }
+
+  private void processDouble(Raster sourceRaster, WritableRaster dest, Rectangle destRect, int[] maskData) {
+    double[] destData = new double[destRect.width * destRect.height];
+    sourceRaster.getSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, destData);
+    IntStream.range(0, destData.length).forEach(i -> {
+      if (maskData[i] == 0) {
+        destData[i] = fillValue.doubleValue();
+      }
+    });
+    dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, destData);
   }
 
 }
