@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * Wgs84CrsProvider is a provider class that implements the FeatureUtils.FeatureCrsProvider interface.
  * It is responsible for providing the WGS84 Coordinate Reference System (CRS) for a given product.
  */
-class Wgs84CrsProvider implements FeatureUtils.FeatureCrsProvider {
+public class Wgs84CrsProvider implements FeatureUtils.FeatureCrsProvider {
 
   private final boolean clipToBounds;
 
