@@ -33,7 +33,7 @@ import org.esa.snap.rcp.actions.AbstractSnapAction;
 import org.esa.snap.ui.AppContext;
 
 /**
- * Abstract action for operators which simplifies which allows the dialog and the menu item to have an icon.
+ * Abstract action for operators which allows the dialog and the menu item to have an icon.
  */
 public abstract class AbstractOpAction extends AbstractSnapAction {
 
