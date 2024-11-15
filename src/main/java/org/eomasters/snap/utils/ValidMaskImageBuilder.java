@@ -54,7 +54,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -358,7 +357,7 @@ public class ValidMaskImageBuilder {
       }
 
       Dimension dimension = product.getSceneRasterSize();
-      final FeatureUtils.FeatureCrsProvider crsProvider = new Wgs84CrsProvider();
+      final FeatureUtils.FeatureCrsProvider crsProvider = new Wgs84CrsProvider(true);
       DefaultFeatureCollection simpleFeatures;
       try {
         simpleFeatures = FeatureUtils.loadShapefileForProduct(shapeFile, sourceProduct,
@@ -373,19 +372,6 @@ public class ValidMaskImageBuilder {
       shapefileMaks.setOwner(sourceProduct);
       Mask.VectorDataType.setVectorData(shapefileMaks, shapefileRoiNode);
       return JAIUtils.createTileFormatOp(shapefileMaks.getSourceImage().getImage(0), tileSize.width, tileSize.height);
-    }
-
-    private class Wgs84CrsProvider implements FeatureUtils.FeatureCrsProvider {
-
-      @Override
-      public CoordinateReferenceSystem getFeatureCrs(Product product) {
-        return DefaultGeographicCRS.WGS84;
-      }
-
-      @Override
-      public boolean clipToProductBounds() {
-        return true;
-      }
     }
 
   }
