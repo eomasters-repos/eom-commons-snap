@@ -1,0 +1,21 @@
+name: 🚀 Feature Request
+description: Submit a feature or enhancement request.
+labels: [ "feature", "enhancement" ]
+assignees:
+  - eomasters-repos
+body:
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Describe your feature request."
+      placeholder: |
+        Include include your use case and what should be achieved by this feature. Describe steps how you would like to
+        use the feature. Mention tools which already have a similar feature. All this helps to understand your requirement.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "## Thanks for your request! We'll take care of it."
