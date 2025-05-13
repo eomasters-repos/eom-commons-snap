@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * -> http://www.gnu.org/licenses/gpl-3.0.html
@@ -32,14 +32,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
-import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.eomasters.utils.TextUtils;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductManager;
@@ -204,25 +201,20 @@ public class SnapSystemReport {
       report.append(String.format("System Log Tail (%d lines):", numLogTailLines)).append("\n");
 
       Path logFile = getCurrentLogFile();
-      // builder doesn't work within snap. Seem it has an old version of commons-io.
-      // org.geotools:gt-wms:jar:28.2:compile includes version 2.10 of commons-io
-      // todo provide patch for this to snap and then use latest version of commons-io
-      // Builder builder = ReversedLinesFileReader.builder()
-      //                                          .setPath(logFile)
-      //                                          .setBufferSize(4096)
-      //                                          .setCharset(StandardCharsets.UTF_8);
-      // try (ReversedLinesFileReader reader = builder.get()) {
-      try (ReversedLinesFileReader reader = new ReversedLinesFileReader(logFile.toFile(), 4096,
-          StandardCharsets.UTF_8)) {
-        List<String> lines = reader.readLines(numLogTailLines);
-        Collections.reverse(lines);
-        lines.forEach(line -> report.append(line).append("\n"));
+      try {
+        List<String> allLines = Files.readAllLines(logFile, StandardCharsets.UTF_8);
+        List<String> tailLines = allLines.size() <= numLogTailLines ?
+            allLines :
+            allLines.subList(allLines.size() - numLogTailLines, allLines.size());
+
+        for (String line : tailLines) {
+          report.append(line).append("\n");
+        }
       } catch (IOException e) {
         report.append("Error while reading log file: ").append(e.getMessage()).append("\n");
       }
       report.append("\n\n");
     }
-
   }
 
   private static Path getCurrentLogFile() {
@@ -281,8 +273,7 @@ public class SnapSystemReport {
       tableData[0][1] = "Code Name";
       tableData[0][2] = "Version";
       tableData[0][3] = "Enabled";
-      modules = modules.stream().sorted(Comparator.comparing(ModuleInfo::getDisplayName))
-                       .collect(Collectors.toList());
+      modules = modules.stream().sorted(Comparator.comparing(ModuleInfo::getDisplayName)).toList();
       int i = 1;
       for (ModuleInfo info : modules) {
         tableData[i][0] = info.getDisplayName();
